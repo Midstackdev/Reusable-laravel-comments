@@ -4,7 +4,7 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            comments
+            <comments endpoint={{ route('course.comment.index', $course) }}></comments>
         </div>
     </div>
 </div>

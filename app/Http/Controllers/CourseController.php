@@ -9,7 +9,7 @@ class CourseController extends Controller
 {
     public function show(Course $course)
     {
-    	dd($course->comments->first()->children);
+    	// dd($course->comments->first()->children);
     	return view('courses.show', compact('course'));
     }
 }
