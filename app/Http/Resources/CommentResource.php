@@ -18,7 +18,8 @@ class CommentResource extends JsonResource
             'id' => $this->id,
             'body' => $this->body,
             'user' => new UserResource($this->user),
-            'children' => CommentResource::collection($this->whenLoaded('children'))
+            'children' => CommentResource::collection($this->whenLoaded('children')),
+            'created_at' => $this->created_at->diffForHumans(),
         ];
     }
 }
