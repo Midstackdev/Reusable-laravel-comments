@@ -17,9 +17,9 @@
 		      	<comment-edit :comment="comment"></comment-edit>
 		      </template>	
 		      <template v-else>
-			      <p class="mb-2">
+			      <div class="mb-2" v-html="body" v-highlightjs>
 			      	{{ comment.body }}
-			      </p>
+			      </div>
 		      </template>
 
 		      <ul class="list-inline" v-if="user.authenticated && !editing">
@@ -29,12 +29,19 @@
 
 		      		>Reply</a>
 		      	</li>
-		      	<li class="list-inline-item" v-if="comment.owner">
-		      		<a href="#"
-		      			@click.prevent="editing = true"
+		      	<template v-if="comment.owner">
+			      	<li class="list-inline-item">
+			      		<a href="#"
+			      			@click.prevent="editing = true"
 
-		      		>Edit</a>
-		      	</li>
+			      		>Edit</a>
+			      	</li>
+			      	<li class="list-inline-item">
+			      		<a href="#"
+			      			@click.prevent="deletes"
+			      		>Delete</a>
+			      	</li>
+		      	</template>
 		      </ul>
 
 		      <template v-if="comment.children">
@@ -56,6 +63,7 @@
 	import Comment from './Comment'
 	import CommentEdit from './CommentEdit'
 	import bus from '../../bus'
+	import marked from 'marked'
 
 	export default {
 		name: "comment",
@@ -81,9 +89,23 @@
 			CommentEdit,
 		},
 
+		computed: {
+			body () {
+				return marked(this.comment.body, { sanitize: true })
+			}
+		},
+
 		methods: {
 			reply () {
 				bus.$emit('comment:reply', this.comment)
+			},
+
+			async deletes () {
+				if (confirm('Are you sure you wan to delete this comment?')) {
+					await axios.delete(`/comments/${this.comment.id}`)
+
+					bus.$emit('comment:deleted', this.comment)
+				}
 			}
 		},
 

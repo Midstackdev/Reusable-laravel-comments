@@ -1,4 +1,6 @@
 import user from './mixins/user'
+import pluralize from './mixins/pluralize'
+import highlight from './directives/highlight'
 
 /**
  * First we will load all of this project's JavaScript dependencies which
@@ -27,6 +29,12 @@ Vue.component('comments', require('./components/comments/Comments.vue').default)
  * Mixins
  */
 Vue.mixin(user)
+Vue.mixin(pluralize)
+
+/**
+ * Directives
+ */
+Vue.directive('highlightjs', highlight)
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

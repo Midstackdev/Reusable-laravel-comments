@@ -6,6 +6,7 @@
 				autofocus="autofocus" 
 				id="body" 
 				class="form-control" 
+				:rows="textareaHeight"
 				v-model="form.body"
 				></textarea>
 				<p class="form-text text-muted">Markdown and code highlighting are supported.</p>
@@ -28,6 +29,12 @@
 				form: {
 					body: this.comment.body
 				}
+			}
+		},
+
+		computed: {
+			textareaHeight () {
+				return Math.max(Math.floor(this.comment.body.split(/\r*\n/).length / 2), 6)
 			}
 		},
 

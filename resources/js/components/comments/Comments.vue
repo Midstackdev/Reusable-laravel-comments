@@ -7,7 +7,7 @@
 		</template>
 
 		<template v-else>
-			<h3 class="mb-5">{{ meta.total }} comments</h3>
+			<h3 class="mb-5">{{ meta.total }} {{ pluralize('comment', meta.total) }}</h3>
 			<new-comment 
 				:endpoint="endpoint"
 				v-if="user.authenticated"
@@ -67,23 +67,37 @@
 		},
 
 		methods: {
+			async fetchComments (page = 1) {
+				return axios.get(`${this.endpoint}?page=${page}`)
+			},
+
 			async loadComments(page = 1) {
-				let comments = await axios.get(`${this.endpoint}?page=${page}`)
+				let comments = await this.fetchComments(page)
 
 				this.comments = comments.data.data
 				this.meta = comments.data.meta
 			},
 
 			async fetchMeta() {
-				let comments = await axios.get(`${this.endpoint}?page=${this.meta.current_page}`)
+				let comments = await this.fetchComments(this.meta.current_page)
 
 				this.meta = comments.data.meta
 			},
 
 			async loadMore(page = 1) {
-				let comments = await axios.get(`${this.endpoint}?page=${this.meta.current_page + 1}`)
+				let comments = await this.fetchComments(this.meta.current_page + 1)
 
 				this.comments.push(...comments.data.data)
+				this.meta = comments.data.meta
+			},
+
+			async loadOneAfterDeletion() {
+				if (this.meta.current_page >= this.meta.last_page) {
+					return
+				}
+				let comments = await this.fetchComments(this.meta.current_page)
+
+				this.comments.push(comments.data.data[comments.data.data.length - 1])
 				this.meta = comments.data.meta
 			},
 
@@ -134,6 +148,22 @@
 
 				}
 				_.assign(_.find(this.comments, { id: comment.id}), comment)
+			},
+
+			deleteComment (comment) {
+				if (comment.child) {
+					let parentComment = _.find(this.comments, { id: comment.parent_id })
+
+					parentComment.children = parentComment.children.filter((child) => child.id != comment.id)
+
+					return 
+				}
+
+				this.comments = this.comments.filter((c) => c.id != comment.id)
+
+				this.meta.total--
+
+				this.loadOneAfterDeletion()
 			}
 		},
 
@@ -151,6 +181,8 @@
 			})
 
 			bus.$on('comment:edited', this.editComment)
+
+			bus.$on('comment:deleted', this.deleteComment)
 		}
 	}
 </script>
